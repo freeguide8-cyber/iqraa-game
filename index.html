@@ -3,204 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة اقرأ وارتق التفاعلية</title>
+    <title>أبطال الارتقاء - لعبة تفاعلية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --text: #f8fafc;
-            --p1-color: #ff0055;
-            --p2-color: #00eeff;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            text-align: center;
+            font-family: 'Tajawal', sans-serif;
+            background-color: #0f172a; 
+            background-image: radial-gradient(circle at top right, #1e1b4b, #0f172a, #312e81);
+            color: white;
             overflow-x: hidden;
+            user-select: none;
+            min-height: 100vh;
         }
 
-        .screen {
-            display: none;
-            animation: fadeIn 0.5s;
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
-        .screen.active {
-            display: block;
+        .animate-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-10deg); }
+            20% { transform: translate(-3px, 0px) rotate(10deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(10deg); }
+            50% { transform: translate(-1px, 2px) rotate(-10deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-10deg); }
+            80% { transform: translate(-1px, -1px) rotate(10deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-10deg); }
+        }
+        .rolling { animation: shake 0.5s; }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        h1, h2 {
-            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-            margin-bottom: 30px;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .btn-card {
-            background-color: var(--card-bg);
-            border: 2px solid var(--primary);
-            color: var(--text);
-            padding: 20px;
-            font-size: 1.2rem;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .btn-card:hover {
-            background-color: var(--primary);
-            transform: translateY(-5px);
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
-        }
-
-        .back-btn {
-            background: transparent;
-            border: 1px solid #cbd5e1;
-            color: #cbd5e1;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            font-size: 1rem;
-        }
-
-        .board-container {
-            max-width: 650px;
-            margin: 0 auto;
+        .board-cell {
             position: relative;
-        }
-
-        .board {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(10, 1fr);
-            gap: 2px;
-            background: #222;
-            border: 5px solid #475569;
-            border-radius: 8px;
-            padding: 2px;
-            aspect-ratio: 1;
-        }
-
-        .cell {
-            background-color: #334155;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            border-radius: 0.25rem;
             font-weight: bold;
-            color: #94a3b8;
-            position: relative;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        .board-cell:nth-child(even) { background-color: rgba(99, 102, 241, 0.2); }
+        .board-cell:nth-child(odd) { background-color: rgba(168, 85, 247, 0.2); }
+        
+        .cell-number {
+            position: absolute;
+            top: 1px;
+            left: 2px;
+            font-size: clamp(0.5rem, 1.5vw, 0.7rem);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 800;
         }
 
-        .cell:nth-child(even) {
-            background-color: #1e293b;
-        }
+        .ladder-indicator { font-size: clamp(0.8rem, 2vw, 1.2rem); filter: drop-shadow(0 0 2px #4ade80); }
+        .snake-indicator { font-size: clamp(0.8rem, 2vw, 1.2rem); filter: drop-shadow(0 0 2px #f87171); }
 
-        .ladder-start { background-color: rgba(34, 197, 94, 0.2) !important; border: 1px solid #22c55e; }
-        .snake-start { background-color: rgba(239, 68, 68, 0.2) !important; border: 1px solid #ef4444; }
-
-        .player {
-            width: 40%;
-            height: 40%;
+        .player-token {
+            width: 45%;
+            height: 45%;
+            max-width: 28px;
+            max-height: 28px;
+            min-width: 14px;
+            min-height: 14px;
             border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(8px, 2vw, 12px);
+            font-weight: 900;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            transition: transform 0.3s ease, top 0.3s, left 0.3s;
             position: absolute;
             z-index: 10;
-            transition: all 0.4s ease;
         }
-        .player1 {
-            background-color: var(--p1-color);
-            box-shadow: 0 0 10px var(--p1-color);
-            transform: translate(-30%, -30%);
-        }
-        .player2 {
-            background-color: var(--p2-color);
-            box-shadow: 0 0 10px var(--p2-color);
-            transform: translate(30%, 30%);
-        }
+        .player-1 { background-color: #ef4444; border: 1.5px solid white; transform: translate(15%, -15%); }
+        .player-2 { background-color: #3b82f6; border: 1.5px solid white; transform: translate(-15%, 15%); }
 
-        .controls {
-            margin-top: 30px;
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            display: inline-block;
-        }
-        
-        .dice-btn {
-            background: linear-gradient(45deg, #10b981, #059669);
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.5rem;
-            color: white;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
-        }
+        .btn-glow { transition: all 0.2s; }
+        .btn-glow:hover { box-shadow: 0 0 15px currentColor; transform: translateY(-2px); }
 
-        .turn-indicator {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .turn-p1 { color: var(--p1-color); }
-        .turn-p2 { color: var(--p2-color); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-        .popup-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        .popup-box {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 20px;
-            border: 2px solid var(--primary);
-            text-align: center;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
-            min-width: 300px;
-        }
-        .popup-word {
-            font-size: 4rem;
-            font-weight: bold;
-            color: white;
-            margin-bottom: 30px;
-        }
-        .judge-btn {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 0 10px;
-            color: white;
-        }
-        .btn-correct { background-color: #22c55e; }
-        .btn-wrong { background-color: #ef4444; }
-
+        /* اللودينق */
         .loader {
             border: 5px solid #1e293b;
-            border-top: 5px solid var(--primary);
+            border-top: 5px solid #3b82f6;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -208,74 +109,155 @@
             margin: 20px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
     </style>
 </head>
-<body>
+<body class="flex flex-col items-center justify-center p-2 sm:p-4">
 
-    <div id="loading-screen" class="screen active">
-        <h2>جاري جلب الدروس من السحابة...</h2>
+    <!-- شاشة التحميل -->
+    <div id="screen-loading" class="w-full max-w-2xl text-center mt-20 animate-pop">
+        <h2 class="text-2xl sm:text-3xl font-bold text-cyan-400 mb-4">جاري جلب الدروس من السحابة...</h2>
         <div class="loader"></div>
     </div>
 
-    <div id="levels-screen" class="screen">
-        <h1>📚 اختر المستوى (الفصل)</h1>
-        <div id="levels-container" class="grid-container"></div>
+    <!-- شاشة الفصول (المستويات) -->
+    <div id="screen-levels" class="w-full max-w-2xl glass-panel rounded-3xl p-6 sm:p-8 text-center animate-pop mt-10 hidden">
+        <h1 class="text-4xl sm:text-5xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 drop-shadow-lg">
+            🎮 أبطال الارتقاء 🚀
+        </h1>
+        <p class="text-md sm:text-lg text-gray-300 mb-8">اختر الفصل لتبدأ التحدي والمغامرة!</p>
+
+        <div id="levels-container" class="space-y-4 max-w-md mx-auto mb-6 max-h-[60vh] overflow-y-auto pr-2">
+            <!-- أزرار الفصول -->
+        </div>
     </div>
 
-    <div id="lessons-screen" class="screen">
-        <button class="back-btn" onclick="showScreen('levels-screen')">🔙 العودة للفصول</button>
-        <h1 id="selected-level-title"></h1>
-        <div id="lessons-container" class="grid-container"></div>
-    </div>
-
-    <div id="game-screen" class="screen">
-        <button class="back-btn" onclick="showScreen('lessons-screen')">🔙 تغيير الدرس</button>
-        <h2 id="current-lesson-title"></h2>
+    <!-- شاشة الدروس -->
+    <div id="screen-lessons" class="w-full max-w-3xl glass-panel rounded-3xl p-6 sm:p-8 text-center animate-pop mt-10 hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="selected-level-title" class="text-2xl sm:text-3xl font-bold text-cyan-400"></h2>
+            <button onclick="showScreen('screen-levels')" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg font-bold text-sm sm:text-base">رجوع ↩</button>
+        </div>
         
-        <div class="board-container">
-            <div id="board" class="board"></div>
-        </div>
-
-        <div class="controls">
-            <div id="turn-display" class="turn-indicator turn-p1">دور اللاعب الأول</div>
-            <button class="dice-btn" onclick="rollDice()">🎲 ارمِ النرد</button>
-            <div id="dice-result" style="font-size: 2rem; margin-top: 10px;"></div>
+        <div id="lessons-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto pr-2">
+            <!-- أزرار الدروس -->
         </div>
     </div>
 
-    <div id="word-popup" class="popup-overlay">
-        <div class="popup-box">
-            <div style="color: #94a3b8; margin-bottom:10px;">اقرأ الكلمة التالية بصوت عالٍ:</div>
-            <div id="popup-word-text" class="popup-word">كلمة</div>
-            <div>
-                <button class="judge-btn btn-correct" onclick="judgeWord(true)">✅ قراءة صحيحة</button>
-                <button class="judge-btn btn-wrong" onclick="judgeWord(false)">❌ قراءة خاطئة</button>
+    <!-- شاشة اللعبة -->
+    <div id="screen-game" class="w-full max-w-3xl glass-panel rounded-3xl p-3 sm:p-6 animate-pop hidden flex-col items-center">
+        
+        <div class="w-full flex justify-between items-center mb-4">
+            <h2 id="game-title" class="text-lg sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 truncate max-w-[70%]">
+                الدرس الحالي
+            </h2>
+            <button onclick="confirmExit()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-700 px-3 py-1.5 rounded-lg font-bold transition text-xs sm:text-sm whitespace-nowrap">
+                خروج 🚪
+            </button>
+        </div>
+
+        <!-- لوحة تحكم اللاعبين والنرد (متجاوبة) -->
+        <div class="w-full flex flex-row justify-between items-center bg-slate-800/50 p-2 sm:p-3 rounded-2xl mb-4 border border-slate-700 gap-2">
+            
+            <div id="player-1-card" class="flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-red-500 bg-red-900/20 transition-all min-w-0">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-500 flex items-center justify-center font-bold shadow-[0_0_10px_red] text-xs sm:text-base">1</div>
+                <div class="text-center sm:text-right">
+                    <p class="font-bold text-red-100 text-[10px] sm:text-sm truncate">اللاعب الأحمر</p>
+                    <p class="text-[9px] sm:text-xs text-red-300">مربع: <span id="pos-p1" class="font-black text-[10px] sm:text-sm">1</span></p>
+                </div>
+            </div>
+
+            <button onclick="rollDice()" id="btn-roll" class="btn-glow flex flex-col items-center justify-center bg-gradient-to-b from-yellow-400 to-orange-600 text-white rounded-2xl p-2 sm:p-3 shadow-[0_0_15px_rgba(234,179,8,0.5)] border-b-4 border-orange-800 transform active:translate-y-1 active:border-b-0 min-w-[80px] sm:min-w-[120px] flex-shrink-0">
+                <span class="text-[9px] sm:text-xs font-bold mb-1 opacity-90" id="turn-indicator">دور الأحمر</span>
+                <div class="text-2xl sm:text-4xl" id="dice-icon">🎲</div>
+                <span class="font-black text-[10px] sm:text-base mt-1">ارمي النرد</span>
+            </button>
+
+            <div id="player-2-card" class="flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-transparent opacity-50 transition-all min-w-0">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-xs sm:text-base">2</div>
+                <div class="text-center sm:text-right">
+                    <p class="font-bold text-blue-100 text-[10px] sm:text-sm truncate">اللاعب الأزرق</p>
+                    <p class="text-[9px] sm:text-xs text-blue-300">مربع: <span id="pos-p2" class="font-black text-[10px] sm:text-sm">1</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full max-w-[650px] aspect-square bg-slate-900 rounded-xl border-4 border-slate-700 shadow-2xl p-0.5 sm:p-1 relative mx-auto">
+            <div id="board-grid" class="w-full h-full grid grid-cols-10 grid-rows-10 gap-0.5 sm:gap-1">
+                <!-- Cells will be generated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة الكلمة المنبثقة -->
+    <div id="modal-word" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center border-2 border-indigo-500 animate-pop shadow-[0_0_50px_rgba(99,102,241,0.5)]">
+            <h3 class="text-yellow-400 font-bold text-lg sm:text-xl mb-2">تحدي القراءة!</h3>
+            <p id="modal-player-name" class="text-gray-300 mb-6 text-sm sm:text-base">اقرأ هذه الكلمة بصوت واضح:</p>
+            
+            <div class="bg-white rounded-2xl p-4 sm:p-10 mb-8 shadow-inner flex justify-center items-center min-h-[120px] sm:min-h-[150px]">
+                <p id="modal-word-text" class="text-4xl sm:text-7xl font-black text-slate-900 leading-tight text-center break-words">
+                    كلمة
+                </p>
+            </div>
+
+            <p class="text-xs sm:text-sm text-gray-400 mb-4">تقييم المعلم:</p>
+            <div class="flex gap-3 sm:gap-4 justify-center">
+                <button onclick="handleAnswer(true)" class="flex-1 btn-glow bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 sm:py-4 px-2 sm:px-4 rounded-xl text-sm sm:text-xl flex items-center justify-center gap-1 sm:gap-2">
+                    <span>✅ صحيحة</span>
+                </button>
+                <button onclick="handleAnswer(false)" class="flex-1 btn-glow bg-gradient-to-r from-red-600 to-rose-700 text-white font-bold py-3 sm:py-4 px-2 sm:px-4 rounded-xl text-sm sm:text-xl flex items-center justify-center gap-1 sm:gap-2">
+                    <span>❌ خاطئة</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة الفوز -->
+    <div id="modal-winner" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="glass-panel rounded-3xl p-10 max-w-md w-full text-center border-2 border-yellow-400 animate-pop">
+            <div class="text-8xl mb-6">🏆</div>
+            <h2 class="text-4xl font-black text-yellow-400 mb-2">مبرووووك!</h2>
+            <p id="winner-text" class="text-xl sm:text-2xl text-white mb-8">اللاعب الأول هو البطل!</p>
+            <button onclick="resetGameAndGoToMenu()" class="btn-glow w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl text-xl shadow-lg">
+                العودة للقائمة
+            </button>
+        </div>
+    </div>
+
+    <!-- نافذة تأكيد الخروج -->
+    <div id="modal-confirm" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="glass-panel rounded-3xl p-6 max-w-sm w-full text-center border-2 border-red-500 animate-pop">
+            <h3 class="text-xl sm:text-2xl font-bold text-white mb-4">هل أنت متأكد؟</h3>
+            <p class="text-gray-300 mb-6">ستفقد تقدمك الحالي في اللعبة.</p>
+            <div class="flex gap-4">
+                <button onclick="document.getElementById('modal-confirm').style.display='none'" class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold">إلغاء</button>
+                <button onclick="resetGameAndGoToMenu(); document.getElementById('modal-confirm').style.display='none'" class="flex-1 bg-red-600 hover:bg-red-500 py-3 rounded-xl font-bold">نعم، اخرج</button>
             </div>
         </div>
     </div>
 
     <script>
-        // رابط جوجل شيت الخاص بك الذي يغذي اللعبة
+        // رابط جوجل شيت الخاص بك
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1G_m-78HQpFchgOcJdJFYC4zA_YgWs-1zDtDhQnl1pT_5BDnRvr1-WFCUy6zmnTwizN_dYLhF2d9s/pub?output=csv'; 
 
-        const snakesAndLadders = {
-            4: 14, 9: 31, 20: 38, 28: 84, 40: 59, 51: 67, 63: 81, 71: 91,
-            17: 7, 54: 34, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 99: 78
-        };
-
         let database = {}; 
-        let currentWords = [];
-        let currentPlayer = 1;
-        let positions = { 1: 0, 2: 0 }; 
-        let oldPosition = 0;
-        let pendingNewPosition = 0;
-        let currentLevel = "";
+        let currentWordsList = [];
+        let activeLevelName = "";
+        
+        // خريطة السلالم والثعابين 100 مربع
+        const actualLadders = { 4: 14, 9: 31, 21: 42, 28: 84, 51: 67, 72: 91, 80: 99 };
+        const snakes = { 17: 7, 54: 34, 62: 19, 64: 60, 87: 36, 93: 73, 95: 75, 98: 79 };
+
+        let players = [
+            { id: 1, pos: 1, oldPos: 1, name: "اللاعب الأحمر", colorClass: "player-1", bgBorder: "border-red-500 bg-red-900/20" },
+            { id: 2, pos: 1, oldPos: 1, name: "اللاعب الأزرق", colorClass: "player-2", bgBorder: "border-blue-500 bg-blue-900/20" }
+        ];
+        let turn = 0; 
+        let isMoving = false;
 
         window.onload = () => {
             fetchData();
-            buildBoard();
-        };
+        }
 
         async function fetchData() {
             try {
@@ -283,10 +265,10 @@
                 const csvText = await response.text();
                 parseCSV(csvText);
                 renderLevels();
-                showScreen('levels-screen');
+                showScreen('screen-levels');
             } catch (error) {
                 console.error("خطأ في التحميل:", error);
-                alert("لم نتمكن من تحميل الدروس! يرجى التأكد من أن رابط الـ CSV يعمل بشكل صحيح.");
+                alert("لم نتمكن من تحميل الدروس! يرجى التأكد من الرابط.");
             }
         }
 
@@ -297,14 +279,12 @@
                 if(!row) continue;
                 
                 let cols = row.split(',').map(c => c.replace(/"/g, '').trim());
-                
                 if(cols.length >= 3) {
                     let level = cols[0];
                     let lesson = cols[1];
                     let wordsString = cols.slice(2).join(','); 
                     let words = wordsString.split(/[،,-]/).map(w => w.trim()).filter(w => w.length > 0 && w !== "كلمة١" && w !== "كلمة٢" && w !== "كلمة٣");
 
-                    // إضافة الكلمات التجريبية إذا كان الدرس لا يحتوي على كلمات حقيقية بعد
                     if(words.length === 0) words = ["(أضف كلمات للدرس في الشيت)"];
 
                     if(!database[level]) database[level] = {};
@@ -316,23 +296,39 @@
         }
 
         function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+            document.getElementById('screen-loading').classList.add('hidden');
+            document.getElementById('screen-levels').classList.add('hidden');
+            document.getElementById('screen-lessons').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById(screenId).classList.remove('hidden');
         }
 
         function renderLevels() {
             const container = document.getElementById('levels-container');
-            container.innerHTML = "";
+            container.innerHTML = '';
+            
+            const gradients = [
+                'from-emerald-500 to-green-600',
+                'from-blue-500 to-indigo-600',
+                'from-purple-500 to-pink-600',
+                'from-orange-500 to-red-600'
+            ];
+
+            let index = 0;
             for(let levelName in database) {
+                let grad = gradients[index % gradients.length];
                 let btn = document.createElement('button');
-                btn.className = 'btn-card';
-                btn.innerText = levelName;
+                btn.className = `btn-glow w-full bg-gradient-to-r ${grad} text-white font-bold py-4 px-6 rounded-xl text-lg sm:text-xl shadow-lg flex items-center justify-between text-right mb-4`;
                 btn.onclick = () => {
-                    currentLevel = levelName;
                     renderLessons(levelName);
-                    showScreen('lessons-screen');
+                    showScreen('screen-lessons');
                 };
+                btn.innerHTML = `
+                    <span class="truncate pr-2">${levelName}</span>
+                    <span class="text-2xl pl-2">▶</span>
+                `;
                 container.appendChild(btn);
+                index++;
             }
         }
 
@@ -344,7 +340,7 @@
             
             for(let lessonName in lessons) {
                 let btn = document.createElement('button');
-                btn.className = 'btn-card';
+                btn.className = 'btn-card bg-slate-800 border-2 border-indigo-500 text-white font-bold p-4 rounded-xl hover:bg-indigo-600 transition shadow-lg text-sm sm:text-base';
                 btn.innerText = lessonName;
                 btn.onclick = () => {
                     startGame(lessonName, lessons[lessonName]);
@@ -354,19 +350,22 @@
         }
 
         function startGame(lessonTitle, wordsArr) {
-            document.getElementById('current-lesson-title').innerText = "🎮 " + lessonTitle;
-            currentWords = wordsArr;
-            positions = { 1: 0, 2: 0 };
-            currentPlayer = 1;
-            updateTurnDisplay();
-            updateTokens();
-            document.getElementById('dice-result').innerText = "";
-            showScreen('game-screen');
+            document.getElementById('game-title').innerText = lessonTitle;
+            currentWordsList = wordsArr;
+            
+            players[0].pos = 1; players[0].oldPos = 1;
+            players[1].pos = 1; players[1].oldPos = 1;
+            turn = 0;
+            
+            generateBoard();
+            updateUI();
+            showScreen('screen-game');
+            setTimeout(drawTokens, 100);
         }
 
-        function buildBoard() {
-            const board = document.getElementById('board');
-            board.innerHTML = "";
+        function generateBoard() {
+            const grid = document.getElementById('board-grid');
+            grid.innerHTML = '';
             
             for (let r = 9; r >= 0; r--) {
                 for (let c = 0; c < 10; c++) {
@@ -378,110 +377,150 @@
                     }
 
                     let cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.id = 'cell-' + num;
+                    cell.className = 'board-cell';
+                    cell.id = `cell-${num}`;
                     
-                    if(snakesAndLadders[num] > num) cell.classList.add('ladder-start');
-                    if(snakesAndLadders[num] < num && snakesAndLadders[num] !== undefined) cell.classList.add('snake-start');
+                    let numSpan = document.createElement('span');
+                    numSpan.className = 'cell-number';
+                    numSpan.innerText = num;
+                    cell.appendChild(numSpan);
 
-                    cell.innerText = num;
-                    board.appendChild(cell);
+                    if (actualLadders[num]) {
+                        let ind = document.createElement('span');
+                        ind.className = 'ladder-indicator absolute opacity-50';
+                        ind.innerText = '🪜';
+                        cell.appendChild(ind);
+                        cell.style.boxShadow = 'inset 0 0 10px rgba(74, 222, 128, 0.4)';
+                    }
+                    if (snakes[num]) {
+                        let ind = document.createElement('span');
+                        ind.className = 'snake-indicator absolute opacity-50';
+                        ind.innerText = '🐍';
+                        cell.appendChild(ind);
+                        cell.style.boxShadow = 'inset 0 0 10px rgba(248, 113, 113, 0.4)';
+                    }
+
+                    if(num === 1) cell.innerHTML += `<span style="opacity:0.2; font-size:12px;">🏁</span>`;
+                    if(num === 100) cell.innerHTML += `<span style="opacity:0.6; font-size:12px;">🏆</span>`;
+
+                    grid.appendChild(cell);
                 }
+            }
+        }
+
+        function drawTokens() {
+            document.querySelectorAll('.player-token').forEach(el => el.remove());
+            players.forEach(p => {
+                let cell = document.getElementById(`cell-${p.pos}`);
+                if (cell) {
+                    let token = document.createElement('div');
+                    token.className = `player-token ${p.colorClass}`;
+                    token.innerText = p.id;
+                    cell.appendChild(token);
+                }
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('pos-p1').innerText = players[0].pos;
+            document.getElementById('pos-p2').innerText = players[1].pos;
+            
+            let p1Card = document.getElementById('player-1-card');
+            let p2Card = document.getElementById('player-2-card');
+            
+            if(turn === 0) {
+                p1Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 transition-all ${players[0].bgBorder} scale-105 shadow-lg min-w-0`;
+                p2Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-transparent opacity-50 transition-all scale-100 min-w-0`;
+                document.getElementById('turn-indicator').innerText = "دور الأحمر";
+            } else {
+                p2Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 transition-all ${players[1].bgBorder} scale-105 shadow-lg min-w-0`;
+                p1Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-transparent opacity-50 transition-all scale-100 min-w-0`;
+                document.getElementById('turn-indicator').innerText = "دور الأزرق";
             }
         }
 
         function rollDice() {
-            if(positions[currentPlayer] >= 100) return;
-
-            const diceValue = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('dice-result').innerText = `حصلت على: ${diceValue} 🎲`;
+            if (isMoving) return;
+            isMoving = true;
             
-            oldPosition = positions[currentPlayer];
-            pendingNewPosition = oldPosition + diceValue;
+            const icon = document.getElementById('dice-icon');
+            icon.classList.add('rolling');
             
-            if(pendingNewPosition > 100) pendingNewPosition = 100; 
-
-            positions[currentPlayer] = pendingNewPosition;
-            updateTokens();
+            let interval = setInterval(() => {
+                icon.innerText = ['🎲','⚀','⚁','⚂','⚃','⚄','⚅'][Math.floor(Math.random() * 6) + 1];
+            }, 50);
 
             setTimeout(() => {
-                showWordPopup();
-            }, 600);
+                clearInterval(interval);
+                icon.classList.remove('rolling');
+                let roll = Math.floor(Math.random() * 6) + 1;
+                const diceFaces = ['','⚀','⚁','⚂','⚃','⚄','⚅'];
+                icon.innerText = diceFaces[roll];
+                
+                setTimeout(() => movePlayer(roll), 400);
+            }, 500);
         }
 
-        function showWordPopup() {
-            const randomWord = currentWords[Math.floor(Math.random() * currentWords.length)];
-            document.getElementById('popup-word-text').innerText = randomWord;
-            document.getElementById('word-popup').style.display = 'flex';
+        function movePlayer(spaces) {
+            let p = players[turn];
+            p.oldPos = p.pos; 
+            
+            let newPos = p.pos + spaces;
+            if (newPos > 100) newPos = 100;
+            
+            p.pos = newPos;
+            drawTokens();
+            updateUI();
+            
+            setTimeout(showWordModal, 600);
         }
 
-        function judgeWord(isCorrect) {
-            document.getElementById('word-popup').style.display = 'none';
+        function showWordModal() {
+            let randIndex = Math.floor(Math.random() * currentWordsList.length);
+            document.getElementById('modal-word-text').innerText = currentWordsList[randIndex];
+            document.getElementById('modal-player-name').innerText = `يا ${players[turn].name}، اقرأ هذه الكلمة:`;
+            document.getElementById('modal-word').style.display = 'flex';
+        }
 
+        function handleAnswer(isCorrect) {
+            document.getElementById('modal-word').style.display = 'none';
+            let p = players[turn];
+            
             if (isCorrect) {
-                if (snakesAndLadders[pendingNewPosition]) {
-                    setTimeout(() => {
-                        let finalPos = snakesAndLadders[pendingNewPosition];
-                        if(finalPos > pendingNewPosition) alert("ممتاز! لقد وجدت سلماً 🪜 يصعد بك!");
-                        else alert("أوه لا! لقد لدغك الثعبان 🐍 تنزل للأسفل!");
-                        
-                        positions[currentPlayer] = finalPos;
-                        updateTokens();
-                        checkWin(finalPos);
-                        switchTurn();
-                    }, 500);
-                } else {
-                    checkWin(pendingNewPosition);
-                    switchTurn();
+                if (actualLadders[p.pos]) {
+                    setTimeout(() => alert("ممتاز! لقد وجدت سلماً 🪜 يصعد بك!"), 100);
+                    p.pos = actualLadders[p.pos];
+                }
+                else if (snakes[p.pos]) {
+                    setTimeout(() => alert("أوه لا! لقد لدغك الثعبان 🐍 تنزل للأسفل!"), 100);
+                    p.pos = snakes[p.pos];
                 }
             } else {
-                setTimeout(() => {
-                    alert("قراءة خاطئة! ❌ عد إلى مكانك السابق.");
-                    positions[currentPlayer] = oldPosition;
-                    updateTokens();
-                    switchTurn();
-                }, 300);
+                setTimeout(() => alert("قراءة خاطئة! ❌ عد إلى مكانك السابق."), 100);
+                p.pos = p.oldPos; 
             }
+            
+            drawTokens();
+            updateUI();
+            
+            if (p.pos === 100) {
+                document.getElementById('winner-text').innerText = `🏆 ${p.name} هو بطل الارتقاء! 🏆`;
+                document.getElementById('modal-winner').style.display = 'flex';
+                isMoving = false;
+                return;
+            }
+
+            turn = turn === 0 ? 1 : 0;
+            updateUI();
+            document.getElementById('dice-icon').innerText = '🎲';
+            isMoving = false;
         }
 
-        function switchTurn() {
-            currentPlayer = currentPlayer === 1 ? 2 : 1;
-            updateTurnDisplay();
-        }
-
-        function updateTurnDisplay() {
-            const display = document.getElementById('turn-display');
-            display.innerText = currentPlayer === 1 ? "دور اللاعب الأول (الأحمر)" : "دور اللاعب الثاني (الأزرق)";
-            display.className = currentPlayer === 1 ? "turn-indicator turn-p1" : "turn-indicator turn-p2";
-        }
-
-        function checkWin(pos) {
-            if (pos === 100) {
-                setTimeout(() => {
-                    alert(`🎉 مبرووووك! اللاعب ${currentPlayer} وصل إلى النهاية وفاز باللعبة! 🎉`);
-                }, 500);
-            }
-        }
-
-        function updateTokens() {
-            document.querySelectorAll('.player').forEach(p => p.remove());
-
-            if (positions[1] > 0) {
-                let cell = document.getElementById('cell-' + positions[1]);
-                if (cell) {
-                    let p1 = document.createElement('div');
-                    p1.className = 'player player1';
-                    cell.appendChild(p1);
-                }
-            }
-            if (positions[2] > 0) {
-                let cell = document.getElementById('cell-' + positions[2]);
-                if (cell) {
-                    let p2 = document.createElement('div');
-                    p2.className = 'player player2';
-                    cell.appendChild(p2);
-                }
-            }
+        function confirmExit() { document.getElementById('modal-confirm').style.display = 'flex'; }
+        
+        function resetGameAndGoToMenu() {
+            document.getElementById('modal-winner').style.display = 'none';
+            showScreen('screen-levels');
         }
     </script>
 </body>
