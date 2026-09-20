@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة اقرأ وارتق التفاعلية</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text: #f8fafc;
+            --p1-color: #ff0055;
+            --p2-color: #00eeff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            overflow-x: hidden;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h1, h2 {
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            margin-bottom: 30px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .btn-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--primary);
+            color: var(--text);
+            padding: 20px;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-card:hover {
+            background-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            color: #cbd5e1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .board-container {
+            max-width: 650px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 2px;
+            background: #222;
+            border: 5px solid #475569;
+            border-radius: 8px;
+            padding: 2px;
+            aspect-ratio: 1;
+        }
+
+        .cell {
+            background-color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #94a3b8;
+            position: relative;
+        }
+
+        .cell:nth-child(even) {
+            background-color: #1e293b;
+        }
+
+        .ladder-start { background-color: rgba(34, 197, 94, 0.2) !important; border: 1px solid #22c55e; }
+        .snake-start { background-color: rgba(239, 68, 68, 0.2) !important; border: 1px solid #ef4444; }
+
+        .player {
+            width: 40%;
+            height: 40%;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 10;
+            transition: all 0.4s ease;
+        }
+        .player1 {
+            background-color: var(--p1-color);
+            box-shadow: 0 0 10px var(--p1-color);
+            transform: translate(-30%, -30%);
+        }
+        .player2 {
+            background-color: var(--p2-color);
+            box-shadow: 0 0 10px var(--p2-color);
+            transform: translate(30%, 30%);
+        }
+
+        .controls {
+            margin-top: 30px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .dice-btn {
+            background: linear-gradient(45deg, #10b981, #059669);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .turn-indicator {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .turn-p1 { color: var(--p1-color); }
+        .turn-p2 { color: var(--p2-color); }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .popup-box {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid var(--primary);
+            text-align: center;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+            min-width: 300px;
+        }
+        .popup-word {
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .judge-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 10px;
+            color: white;
+        }
+        .btn-correct { background-color: #22c55e; }
+        .btn-wrong { background-color: #ef4444; }
+
+        .loader {
+            border: 5px solid #1e293b;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen" class="screen active">
+        <h2>جاري جلب الدروس من السحابة...</h2>
+        <div class="loader"></div>
+    </div>
+
+    <div id="levels-screen" class="screen">
+        <h1>📚 اختر المستوى (الفصل)</h1>
+        <div id="levels-container" class="grid-container"></div>
+    </div>
+
+    <div id="lessons-screen" class="screen">
+        <button class="back-btn" onclick="showScreen('levels-screen')">🔙 العودة للفصول</button>
+        <h1 id="selected-level-title"></h1>
+        <div id="lessons-container" class="grid-container"></div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <button class="back-btn" onclick="showScreen('lessons-screen')">🔙 تغيير الدرس</button>
+        <h2 id="current-lesson-title"></h2>
+        
+        <div class="board-container">
+            <div id="board" class="board"></div>
+        </div>
+
+        <div class="controls">
+            <div id="turn-display" class="turn-indicator turn-p1">دور اللاعب الأول</div>
+            <button class="dice-btn" onclick="rollDice()">🎲 ارمِ النرد</button>
+            <div id="dice-result" style="font-size: 2rem; margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <div id="word-popup" class="popup-overlay">
+        <div class="popup-box">
+            <div style="color: #94a3b8; margin-bottom:10px;">اقرأ الكلمة التالية بصوت عالٍ:</div>
+            <div id="popup-word-text" class="popup-word">كلمة</div>
+            <div>
+                <button class="judge-btn btn-correct" onclick="judgeWord(true)">✅ قراءة صحيحة</button>
+                <button class="judge-btn btn-wrong" onclick="judgeWord(false)">❌ قراءة خاطئة</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // رابط جوجل شيت الخاص بك الذي يغذي اللعبة
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1G_m-78HQpFchgOcJdJFYC4zA_YgWs-1zDtDhQnl1pT_5BDnRvr1-WFCUy6zmnTwizN_dYLhF2d9s/pub?output=csv'; 
+
+        const snakesAndLadders = {
+            4: 14, 9: 31, 20: 38, 28: 84, 40: 59, 51: 67, 63: 81, 71: 91,
+            17: 7, 54: 34, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 99: 78
+        };
+
+        let database = {}; 
+        let currentWords = [];
+        let currentPlayer = 1;
+        let positions = { 1: 0, 2: 0 }; 
+        let oldPosition = 0;
+        let pendingNewPosition = 0;
+        let currentLevel = "";
+
+        window.onload = () => {
+            fetchData();
+            buildBoard();
+        };
+
+        async function fetchData() {
+            try {
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+                parseCSV(csvText);
+                renderLevels();
+                showScreen('levels-screen');
+            } catch (error) {
+                console.error("خطأ في التحميل:", error);
+                alert("لم نتمكن من تحميل الدروس! يرجى التأكد من أن رابط الـ CSV يعمل بشكل صحيح.");
+            }
+        }
+
+        function parseCSV(text) {
+            let rows = text.split('\n');
+            for(let i = 1; i < rows.length; i++) {
+                let row = rows[i].trim();
+                if(!row) continue;
+                
+                let cols = row.split(',').map(c => c.replace(/"/g, '').trim());
+                
+                if(cols.length >= 3) {
+                    let level = cols[0];
+                    let lesson = cols[1];
+                    let wordsString = cols.slice(2).join(','); 
+                    let words = wordsString.split(/[،,-]/).map(w => w.trim()).filter(w => w.length > 0 && w !== "كلمة١" && w !== "كلمة٢" && w !== "كلمة٣");
+
+                    // إضافة الكلمات التجريبية إذا كان الدرس لا يحتوي على كلمات حقيقية بعد
+                    if(words.length === 0) words = ["(أضف كلمات للدرس في الشيت)"];
+
+                    if(!database[level]) database[level] = {};
+                    if(!database[level][lesson]) database[level][lesson] = [];
+                    
+                    database[level][lesson] = database[level][lesson].concat(words);
+                }
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function renderLevels() {
+            const container = document.getElementById('levels-container');
+            container.innerHTML = "";
+            for(let levelName in database) {
+                let btn = document.createElement('button');
+                btn.className = 'btn-card';
+                btn.innerText = levelName;
+                btn.onclick = () => {
+                    currentLevel = levelName;
+                    renderLessons(levelName);
+                    showScreen('lessons-screen');
+                };
+                container.appendChild(btn);
+            }
+        }
+
+        function renderLessons(levelName) {
+            document.getElementById('selected-level-title').innerText = "📂 " + levelName;
+            const container = document.getElementById('lessons-container');
+            container.innerHTML = "";
+            let lessons = database[levelName];
+            
+            for(let lessonName in lessons) {
+                let btn = document.createElement('button');
+                btn.className = 'btn-card';
+                btn.innerText = lessonName;
+                btn.onclick = () => {
+                    startGame(lessonName, lessons[lessonName]);
+                };
+                container.appendChild(btn);
+            }
+        }
+
+        function startGame(lessonTitle, wordsArr) {
+            document.getElementById('current-lesson-title').innerText = "🎮 " + lessonTitle;
+            currentWords = wordsArr;
+            positions = { 1: 0, 2: 0 };
+            currentPlayer = 1;
+            updateTurnDisplay();
+            updateTokens();
+            document.getElementById('dice-result').innerText = "";
+            showScreen('game-screen');
+        }
+
+        function buildBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = "";
+            
+            for (let r = 9; r >= 0; r--) {
+                for (let c = 0; c < 10; c++) {
+                    let num;
+                    if (r % 2 === 0) {
+                        num = (r * 10) + c + 1;
+                    } else {
+                        num = (r * 10) + (10 - c);
+                    }
+
+                    let cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.id = 'cell-' + num;
+                    
+                    if(snakesAndLadders[num] > num) cell.classList.add('ladder-start');
+                    if(snakesAndLadders[num] < num && snakesAndLadders[num] !== undefined) cell.classList.add('snake-start');
+
+                    cell.innerText = num;
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function rollDice() {
+            if(positions[currentPlayer] >= 100) return;
+
+            const diceValue = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('dice-result').innerText = `حصلت على: ${diceValue} 🎲`;
+            
+            oldPosition = positions[currentPlayer];
+            pendingNewPosition = oldPosition + diceValue;
+            
+            if(pendingNewPosition > 100) pendingNewPosition = 100; 
+
+            positions[currentPlayer] = pendingNewPosition;
+            updateTokens();
+
+            setTimeout(() => {
+                showWordPopup();
+            }, 600);
+        }
+
+        function showWordPopup() {
+            const randomWord = currentWords[Math.floor(Math.random() * currentWords.length)];
+            document.getElementById('popup-word-text').innerText = randomWord;
+            document.getElementById('word-popup').style.display = 'flex';
+        }
+
+        function judgeWord(isCorrect) {
+            document.getElementById('word-popup').style.display = 'none';
+
+            if (isCorrect) {
+                if (snakesAndLadders[pendingNewPosition]) {
+                    setTimeout(() => {
+                        let finalPos = snakesAndLadders[pendingNewPosition];
+                        if(finalPos > pendingNewPosition) alert("ممتاز! لقد وجدت سلماً 🪜 يصعد بك!");
+                        else alert("أوه لا! لقد لدغك الثعبان 🐍 تنزل للأسفل!");
+                        
+                        positions[currentPlayer] = finalPos;
+                        updateTokens();
+                        checkWin(finalPos);
+                        switchTurn();
+                    }, 500);
+                } else {
+                    checkWin(pendingNewPosition);
+                    switchTurn();
+                }
+            } else {
+                setTimeout(() => {
+                    alert("قراءة خاطئة! ❌ عد إلى مكانك السابق.");
+                    positions[currentPlayer] = oldPosition;
+                    updateTokens();
+                    switchTurn();
+                }, 300);
+            }
+        }
+
+        function switchTurn() {
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            updateTurnDisplay();
+        }
+
+        function updateTurnDisplay() {
+            const display = document.getElementById('turn-display');
+            display.innerText = currentPlayer === 1 ? "دور اللاعب الأول (الأحمر)" : "دور اللاعب الثاني (الأزرق)";
+            display.className = currentPlayer === 1 ? "turn-indicator turn-p1" : "turn-indicator turn-p2";
+        }
+
+        function checkWin(pos) {
+            if (pos === 100) {
+                setTimeout(() => {
+                    alert(`🎉 مبرووووك! اللاعب ${currentPlayer} وصل إلى النهاية وفاز باللعبة! 🎉`);
+                }, 500);
+            }
+        }
+
+        function updateTokens() {
+            document.querySelectorAll('.player').forEach(p => p.remove());
+
+            if (positions[1] > 0) {
+                let cell = document.getElementById('cell-' + positions[1]);
+                if (cell) {
+                    let p1 = document.createElement('div');
+                    p1.className = 'player player1';
+                    cell.appendChild(p1);
+                }
+            }
+            if (positions[2] > 0) {
+                let cell = document.getElementById('cell-' + positions[2]);
+                if (cell) {
+                    let p2 = document.createElement('div');
+                    p2.className = 'player player2';
+                    cell.appendChild(p2);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
