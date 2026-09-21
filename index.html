@@ -23,12 +23,13 @@
         }
         .animate-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-        @keyframes shake {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-15deg); }
-            75% { transform: rotate(15deg); }
+        @keyframes shakeDice {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-20deg) scale(1.1); }
+            50% { transform: rotate(20deg) scale(1.1); }
+            75% { transform: rotate(-20deg) scale(1.1); }
         }
-        .rolling { animation: shake 0.3s infinite; }
+        .rolling { animation: shakeDice 0.4s infinite; }
 
         .glass-panel {
             background: rgba(255, 255, 255, 0.05);
@@ -43,35 +44,37 @@
             justify-content: flex-start;
             border-radius: 0.25rem;
             box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-            padding: 2px;
+            padding: 3px;
         }
         .board-cell:nth-child(even) { background-color: rgba(255, 255, 255, 0.9); }
         .board-cell:nth-child(odd) { background-color: rgba(226, 232, 240, 0.9); }
         
         .cell-number {
-            font-size: clamp(0.7rem, 2vw, 1.2rem);
+            font-size: clamp(0.6rem, 2vw, 1.1rem);
             color: #1e293b;
             font-weight: 900;
             opacity: 0.8;
             z-index: 1;
+            line-height: 1.1;
         }
 
-        /* تنسيق اللاعبين الجديد ليتحركوا بنعومة فوق كل شيء */
+        /* تنسيق اللاعبين متجاوب 100% مع حجم اللوحة */
         .player-token {
-            width: clamp(20px, 5%, 35px);
-            height: clamp(20px, 5%, 35px);
+            width: 7%;
+            height: 7%;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(10px, 2vw, 16px);
+            font-size: clamp(10px, 2.5vw, 16px);
             font-weight: 900;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.8);
             z-index: 50;
+            position: absolute;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        /* إزاحة خفيفة حتى لا يغطي اللاعب الأول الثاني تماماً */
-        .player-1 { background-color: #ef4444; border: 2px solid white; transform: translate(-80%, -80%); }
-        .player-2 { background-color: #3b82f6; border: 2px solid white; transform: translate(-20%, -20%); }
+        .player-1 { background-color: #ef4444; border: 2px solid white; transform: translate(20%, -20%); }
+        .player-2 { background-color: #3b82f6; border: 2px solid white; transform: translate(-20%, 20%); }
 
         .btn-glow { transition: all 0.2s; }
         .btn-glow:hover { box-shadow: 0 0 15px currentColor; transform: translateY(-2px); }
@@ -90,6 +93,18 @@
             margin: 20px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* رسالة النرد الجميلة فوق اللوحة */
+        #dice-toast {
+            transition: all 0.3s ease;
+            transform: translateY(-20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #dice-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center p-2 sm:p-4">
@@ -102,65 +117,64 @@
 
     <!-- شاشة الفصول -->
     <div id="screen-levels" class="w-full max-w-2xl glass-panel rounded-3xl p-6 sm:p-8 text-center animate-pop mt-10 hidden">
-        <h1 class="text-4xl sm:text-5xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 drop-shadow-lg">
+        <h1 class="text-3xl sm:text-5xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 drop-shadow-lg">
             🎮 أبطال الارتقاء 🚀
         </h1>
-        <p class="text-md sm:text-lg text-gray-300 mb-8">اختر الفصل لتبدأ التحدي والمغامرة!</p>
+        <p class="text-sm sm:text-lg text-gray-300 mb-8">اختر الفصل لتبدأ التحدي والمغامرة!</p>
         <div id="levels-container" class="space-y-4 max-w-md mx-auto mb-6 max-h-[60vh] overflow-y-auto pr-2"></div>
     </div>
 
     <!-- شاشة الدروس -->
     <div id="screen-lessons" class="w-full max-w-3xl glass-panel rounded-3xl p-6 sm:p-8 text-center animate-pop mt-10 hidden">
         <div class="flex justify-between items-center mb-6">
-            <h2 id="selected-level-title" class="text-2xl sm:text-3xl font-bold text-cyan-400"></h2>
-            <button onclick="showScreen('screen-levels')" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg font-bold text-sm sm:text-base">رجوع ↩</button>
+            <h2 id="selected-level-title" class="text-xl sm:text-3xl font-bold text-cyan-400 truncate max-w-[70%]"></h2>
+            <button onclick="showScreen('screen-levels')" class="bg-gray-700 hover:bg-gray-600 px-3 sm:px-4 py-2 rounded-lg font-bold text-xs sm:text-base whitespace-nowrap">رجوع ↩</button>
         </div>
         <div id="lessons-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto pr-2"></div>
     </div>
 
     <!-- شاشة اللعبة -->
-    <div id="screen-game" class="w-full max-w-3xl glass-panel rounded-3xl p-3 sm:p-6 animate-pop hidden flex-col items-center relative">
+    <div id="screen-game" class="w-full max-w-3xl glass-panel rounded-3xl p-3 sm:p-5 animate-pop hidden flex-col items-center relative">
         
-        <!-- نتيجة النرد الضخمة (تظهر في المنتصف) -->
-        <div id="dice-result-display" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] bg-black/95 px-10 py-6 rounded-3xl border-4 border-yellow-400 shadow-[0_0_50px_rgba(250,204,21,0.8)] animate-pop flex flex-col items-center justify-center gap-2">
-            <span class="text-2xl text-white font-bold">حصلت على</span>
-            <div class="flex items-center gap-4">
-                <span class="text-5xl">🎲</span>
-                <span id="dice-result-number" class="text-7xl font-black text-yellow-400"></span>
-            </div>
-        </div>
-
-        <div class="w-full flex justify-between items-center mb-4">
+        <div class="w-full flex justify-between items-center mb-3">
             <h2 id="game-title" class="text-lg sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 truncate max-w-[70%]"></h2>
-            <button onclick="confirmExit()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-700 px-3 py-1.5 rounded-lg font-bold transition text-xs sm:text-sm">خروج 🚪</button>
+            <button onclick="confirmExit()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-700 px-3 py-1.5 rounded-lg font-bold transition text-xs sm:text-sm whitespace-nowrap">خروج 🚪</button>
         </div>
 
-        <!-- لوحة التحكم -->
-        <div class="w-full flex flex-row justify-between items-center bg-slate-800/50 p-2 sm:p-3 rounded-2xl mb-4 border border-slate-700 gap-2">
-            <div id="player-1-card" class="flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-red-500 bg-red-900/20 transition-all min-w-0">
-                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-500 flex items-center justify-center font-bold text-xs sm:text-base shadow-[0_0_10px_red]">1</div>
+        <!-- لوحة التحكم بالنرد واللاعبين -->
+        <div class="w-full flex justify-between items-center bg-slate-800/60 p-2 sm:p-3 rounded-2xl mb-3 border border-slate-600 gap-2 sm:gap-4 relative">
+            
+            <div id="player-1-card" class="flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-2 rounded-xl border-2 border-red-500 bg-red-900/30 transition-all min-w-[70px]">
+                <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-red-500 flex items-center justify-center font-bold text-sm sm:text-lg shadow-[0_0_10px_red]">1</div>
                 <div class="text-center sm:text-right">
-                    <p class="font-bold text-red-100 text-[10px] sm:text-sm truncate">اللاعب الأحمر</p>
-                    <p class="text-[9px] sm:text-xs text-red-300">مربع: <span id="pos-p1" class="font-black">1</span></p>
+                    <p class="font-bold text-red-100 text-[10px] sm:text-sm truncate">الأحمر</p>
+                    <p class="text-[9px] sm:text-xs text-red-300">مربع: <span id="pos-p1" class="font-black text-[11px] sm:text-sm">1</span></p>
                 </div>
             </div>
 
-            <button onclick="rollDice()" id="btn-roll" class="btn-glow flex flex-col items-center justify-center bg-gradient-to-b from-yellow-400 to-orange-600 text-white rounded-2xl p-2 sm:p-3 shadow-[0_0_15px_rgba(234,179,8,0.5)] border-b-4 border-orange-800 transform active:translate-y-1 active:border-b-0 min-w-[80px] sm:min-w-[120px] flex-shrink-0 z-10">
-                <span class="text-[10px] sm:text-sm font-bold mb-1 opacity-90" id="turn-indicator">دور الأحمر</span>
+            <!-- زر النرد المُحسن -->
+            <button onclick="rollDice()" id="btn-roll" class="btn-glow flex flex-col items-center justify-center bg-gradient-to-b from-yellow-400 to-orange-600 text-white rounded-2xl p-2 sm:p-3 shadow-[0_0_15px_rgba(234,179,8,0.5)] border-b-4 border-orange-800 transform active:translate-y-1 active:border-b-0 w-[90px] sm:w-[130px] flex-shrink-0 z-10 transition-colors">
+                <span class="text-[9px] sm:text-sm font-bold mb-1 opacity-90" id="turn-indicator">دور الأحمر</span>
                 <div class="text-3xl sm:text-5xl drop-shadow-md" id="dice-icon">🎲</div>
+                <span class="font-black text-[10px] sm:text-sm mt-1" id="dice-text">ارمي النرد</span>
             </button>
 
-            <div id="player-2-card" class="flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-transparent opacity-50 transition-all min-w-0">
-                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-xs sm:text-base">2</div>
+            <div id="player-2-card" class="flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-2 rounded-xl border-2 border-transparent opacity-50 transition-all min-w-[70px]">
+                <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold text-sm sm:text-lg">2</div>
                 <div class="text-center sm:text-right">
-                    <p class="font-bold text-blue-100 text-[10px] sm:text-sm truncate">اللاعب الأزرق</p>
-                    <p class="text-[9px] sm:text-xs text-blue-300">مربع: <span id="pos-p2" class="font-black">1</span></p>
+                    <p class="font-bold text-blue-100 text-[10px] sm:text-sm truncate">الأزرق</p>
+                    <p class="text-[9px] sm:text-xs text-blue-300">مربع: <span id="pos-p2" class="font-black text-[11px] sm:text-sm">1</span></p>
                 </div>
             </div>
         </div>
 
-        <!-- اللوحة التفاعلية مع رسومات SVG -->
-        <div class="w-full max-w-[650px] aspect-square bg-slate-900 rounded-xl border-4 border-slate-700 shadow-2xl p-1 relative mx-auto overflow-hidden">
+        <!-- رسالة نتيجة النرد (Toast) تظهر وتختفي بنعومة -->
+        <div id="dice-toast" class="absolute z-50 top-[140px] sm:top-[160px] bg-green-500 text-white font-bold px-6 py-2 rounded-full shadow-lg text-sm sm:text-base border-2 border-green-300 flex items-center gap-2">
+            <span id="toast-text"></span>
+        </div>
+
+        <!-- اللوحة التفاعلية مع رسومات SVG المحسنة -->
+        <div class="w-full max-w-[600px] aspect-square bg-slate-900 rounded-xl border-4 border-slate-600 shadow-2xl p-1 relative mx-auto overflow-hidden">
             <!-- الشبكة الخلفية -->
             <div id="board-grid" class="w-full h-full grid grid-cols-10 grid-rows-10 gap-[1px] relative z-0"></div>
             <!-- طبقة الرسومات (السلالم والثعابين) -->
@@ -188,11 +202,11 @@
 
     <!-- نافذة الفوز -->
     <div id="modal-winner" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-[110] p-4">
-        <div class="glass-panel rounded-3xl p-10 max-w-md w-full text-center border-2 border-yellow-400 animate-pop">
-            <div class="text-8xl mb-6">🏆</div>
-            <h2 class="text-4xl font-black text-yellow-400 mb-2">مبرووووك!</h2>
-            <p id="winner-text" class="text-xl sm:text-2xl text-white mb-8"></p>
-            <button onclick="resetGameAndGoToMenu()" class="btn-glow w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl text-xl shadow-lg">العودة للقائمة</button>
+        <div class="glass-panel rounded-3xl p-8 sm:p-10 max-w-md w-full text-center border-2 border-yellow-400 animate-pop">
+            <div class="text-7xl sm:text-8xl mb-6">🏆</div>
+            <h2 class="text-3xl sm:text-4xl font-black text-yellow-400 mb-2">مبرووووك!</h2>
+            <p id="winner-text" class="text-lg sm:text-2xl text-white mb-8"></p>
+            <button onclick="resetGameAndGoToMenu()" class="btn-glow w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl text-lg sm:text-xl shadow-lg">العودة للقائمة</button>
         </div>
     </div>
 
@@ -200,7 +214,7 @@
     <div id="modal-confirm" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[110] p-4">
         <div class="glass-panel rounded-3xl p-6 max-w-sm w-full text-center border-2 border-red-500 animate-pop">
             <h3 class="text-xl sm:text-2xl font-bold text-white mb-4">هل أنت متأكد؟</h3>
-            <p class="text-gray-300 mb-6">ستفقد تقدمك الحالي في اللعبة.</p>
+            <p class="text-gray-300 mb-6 text-sm sm:text-base">ستفقد تقدمك الحالي في اللعبة.</p>
             <div class="flex gap-4">
                 <button onclick="document.getElementById('modal-confirm').style.display='none'" class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold">إلغاء</button>
                 <button onclick="resetGameAndGoToMenu(); document.getElementById('modal-confirm').style.display='none'" class="flex-1 bg-red-600 hover:bg-red-500 py-3 rounded-xl font-bold">نعم، اخرج</button>
@@ -218,8 +232,8 @@
         const snakes = { 17: 7, 54: 34, 62: 19, 64: 60, 87: 36, 93: 73, 95: 75, 98: 79 };
 
         let players = [
-            { id: 1, pos: 1, oldPos: 1, name: "اللاعب الأحمر", colorClass: "player-1", bgBorder: "border-red-500 bg-red-900/20" },
-            { id: 2, pos: 1, oldPos: 1, name: "اللاعب الأزرق", colorClass: "player-2", bgBorder: "border-blue-500 bg-blue-900/20" }
+            { id: 1, pos: 1, oldPos: 1, name: "اللاعب الأحمر", colorClass: "player-1", bgBorder: "border-red-500 bg-red-900/30", color: "#ef4444" },
+            { id: 2, pos: 1, oldPos: 1, name: "اللاعب الأزرق", colorClass: "player-2", bgBorder: "border-blue-500 bg-blue-900/30", color: "#3b82f6" }
         ];
         let turn = 0; 
         let isMoving = false;
@@ -286,7 +300,7 @@
             let lessons = database[levelName];
             for(let lessonName in lessons) {
                 let btn = document.createElement('button');
-                btn.className = 'bg-slate-800 border-2 border-indigo-500 text-white font-bold p-4 rounded-xl hover:bg-indigo-600 transition shadow-lg text-sm sm:text-base';
+                btn.className = 'bg-slate-800 border-2 border-indigo-500 text-white font-bold p-3 sm:p-4 rounded-xl hover:bg-indigo-600 transition shadow-lg text-xs sm:text-sm text-right';
                 btn.innerText = lessonName;
                 btn.onclick = () => startGame(lessonName, lessons[lessonName]);
                 container.appendChild(btn);
@@ -327,91 +341,88 @@
                 numSpan.className = 'cell-number';
                 numSpan.innerText = num;
                 
-                if(num === 1) numSpan.innerHTML += `<br><span style="font-size:10px;">البداية</span>`;
-                if(num === 100) numSpan.innerHTML += `<br><span style="font-size:10px;">النهاية</span>`;
+                if(num === 1) numSpan.innerHTML += `<br><span style="font-size: clamp(8px, 1.5vw, 10px);">البداية</span>`;
+                if(num === 100) numSpan.innerHTML += `<br><span style="font-size: clamp(8px, 1.5vw, 10px);">النهاية</span>`;
                 
                 cell.appendChild(numSpan);
                 grid.appendChild(cell);
             });
         }
 
-        // رسم السلالم والثعابين باحترافية عالية 
+        // تحجيم وتنعيم السلالم والثعابين 
         function drawSnakesAndLaddersGraphics() {
             const svg = document.getElementById('svg-layer');
             let svgHtml = '';
             
             function getCoords(num) {
                 let index = cellsOrder.indexOf(num);
-                let row = Math.floor(index / 10);
-                let col = index % 10;
-                return { x: (9 - col) * 100 + 50, y: row * 100 + 50 }; // SVG 1000x1000
+                let row = Math.floor(index / 10), col = index % 10;
+                return { x: (9 - col) * 100 + 50, y: row * 100 + 50 }; 
             }
 
-            // رسم السلالم (Ladders)
+            // رسم السلالم (Ladders) - أنحف وأنعم
             for (let start in actualLadders) {
                 let p1 = getCoords(parseInt(start)), p2 = getCoords(actualLadders[start]);
                 let dx = p2.x - p1.x, dy = p2.y - p1.y;
                 let angle = Math.atan2(dy, dx);
                 let dist = Math.sqrt(dx*dx + dy*dy);
-                let nx = -Math.sin(angle) * 15, ny = Math.cos(angle) * 15;
+                let nx = -Math.sin(angle) * 12, ny = Math.cos(angle) * 12; // تقليل العرض
                 
-                // قضبان السلم الخشبية
-                svgHtml += `<line x1="${p1.x+nx}" y1="${p1.y+ny}" x2="${p2.x+nx}" y2="${p2.y+ny}" stroke="#92400e" stroke-width="12" stroke-linecap="round"/>`;
-                svgHtml += `<line x1="${p1.x-nx}" y1="${p1.y-ny}" x2="${p2.x-nx}" y2="${p2.y-ny}" stroke="#92400e" stroke-width="12" stroke-linecap="round"/>`;
+                svgHtml += `<line x1="${p1.x+nx}" y1="${p1.y+ny}" x2="${p2.x+nx}" y2="${p2.y+ny}" stroke="#78350f" stroke-width="8" stroke-linecap="round"/>`;
+                svgHtml += `<line x1="${p1.x-nx}" y1="${p1.y-ny}" x2="${p2.x-nx}" y2="${p2.y-ny}" stroke="#78350f" stroke-width="8" stroke-linecap="round"/>`;
                 
-                // الدرجات
-                let steps = Math.floor(dist / 35);
+                let steps = Math.floor(dist / 30);
                 for(let i = 1; i < steps; i++) {
                     let px = p1.x + (dx * i / steps), py = p1.y + (dy * i / steps);
-                    svgHtml += `<line x1="${px+nx}" y1="${py+ny}" x2="${px-nx}" y2="${py-ny}" stroke="#b45309" stroke-width="8" />`;
+                    svgHtml += `<line x1="${px+nx}" y1="${py+ny}" x2="${px-nx}" y2="${py-ny}" stroke="#92400e" stroke-width="5" />`;
                 }
             }
 
-            // رسم الثعابين (Snakes)
+            // رسم الثعابين (Snakes) - أنحف ورأس أصغر
             for (let start in snakes) {
-                let p1 = getCoords(parseInt(start)); // الرأس
-                let p2 = getCoords(snakes[start]); // الذيل
-                
+                let p1 = getCoords(parseInt(start)); 
+                let p2 = getCoords(snakes[start]); 
                 let dx = p2.x - p1.x, dy = p2.y - p1.y;
                 let angle = Math.atan2(dy, dx);
-                let cx = (p1.x + p2.x)/2 - Math.sin(angle)*150;
-                let cy = (p1.y + p2.y)/2 + Math.cos(angle)*150;
+                let cx = (p1.x + p2.x)/2 - Math.sin(angle)*120;
+                let cy = (p1.y + p2.y)/2 + Math.cos(angle)*120;
                 
                 // جسم الثعبان
-                svgHtml += `<path d="M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}" fill="none" stroke="#15803d" stroke-width="24" stroke-linecap="round"/>`;
-                // بطن الثعبان (زخرفة)
-                svgHtml += `<path d="M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}" fill="none" stroke="#4ade80" stroke-width="8" stroke-dasharray="15 15" stroke-linecap="round"/>`;
+                svgHtml += `<path d="M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}" fill="none" stroke="#166534" stroke-width="14" stroke-linecap="round"/>`;
+                // بطن الثعبان
+                svgHtml += `<path d="M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}" fill="none" stroke="#4ade80" stroke-width="5" stroke-dasharray="10 10" stroke-linecap="round"/>`;
                 
-                // رأس الثعبان
-                let hx = p1.x - Math.cos(angle)*15, hy = p1.y - Math.sin(angle)*15;
-                svgHtml += `<circle cx="${hx}" cy="${hy}" r="22" fill="#15803d"/>`;
+                // رأس الثعبان الأصغر
+                let hx = p1.x - Math.cos(angle)*8, hy = p1.y - Math.sin(angle)*8;
+                svgHtml += `<circle cx="${hx}" cy="${hy}" r="14" fill="#166534"/>`;
                 
                 // العيون
-                let ex = Math.cos(angle + Math.PI/2) * 10, ey = Math.sin(angle + Math.PI/2) * 10;
-                svgHtml += `<circle cx="${hx+ex}" cy="${hy+ey}" r="6" fill="white"/><circle cx="${hx+ex}" cy="${hy+ey}" r="3" fill="black"/>`;
-                svgHtml += `<circle cx="${hx-ex}" cy="${hy-ey}" r="6" fill="white"/><circle cx="${hx-ex}" cy="${hy-ey}" r="3" fill="black"/>`;
+                let ex = Math.cos(angle + Math.PI/2) * 6, ey = Math.sin(angle + Math.PI/2) * 6;
+                svgHtml += `<circle cx="${hx+ex}" cy="${hy+ey}" r="4" fill="white"/><circle cx="${hx+ex}" cy="${hy+ey}" r="2" fill="black"/>`;
+                svgHtml += `<circle cx="${hx-ex}" cy="${hy-ey}" r="4" fill="white"/><circle cx="${hx-ex}" cy="${hy-ey}" r="2" fill="black"/>`;
                 
                 // اللسان
-                let tx1 = hx - Math.cos(angle)*22, ty1 = hy - Math.sin(angle)*22;
-                let tx2 = hx - Math.cos(angle)*40, ty2 = hy - Math.sin(angle)*40;
-                svgHtml += `<line x1="${tx1}" y1="${ty1}" x2="${tx2}" y2="${ty2}" stroke="#ef4444" stroke-width="4"/>`;
+                let tx1 = hx - Math.cos(angle)*16, ty1 = hy - Math.sin(angle)*16;
+                let tx2 = hx - Math.cos(angle)*28, ty2 = hy - Math.sin(angle)*28;
+                svgHtml += `<line x1="${tx1}" y1="${ty1}" x2="${tx2}" y2="${ty2}" stroke="#ef4444" stroke-width="3"/>`;
             }
             svg.innerHTML = svgHtml;
         }
 
+        // وضع اللاعبين بناءً على النسبة المئوية (متجاوب 100%)
         function drawTokens() {
             const layer = document.getElementById('players-layer');
             layer.innerHTML = '';
             players.forEach(p => {
                 let index = cellsOrder.indexOf(p.pos);
                 let row = Math.floor(index / 10), col = index % 10;
-                let xPercent = (9 - col) * 10 + 5;
+                let xPercent = (9 - col) * 10 + 5; 
                 let yPercent = row * 10 + 5;
 
                 let token = document.createElement('div');
-                token.className = `player-token ${p.colorClass} absolute transition-all duration-[600ms] ease-in-out`;
-                token.style.left = `${xPercent}%`;
-                token.style.top = `${yPercent}%`;
+                token.className = `player-token ${p.colorClass}`;
+                token.style.left = `calc(${xPercent}% - 3.5%)`; 
+                token.style.top = `calc(${yPercent}% - 3.5%)`;
                 token.innerText = p.id;
                 layer.appendChild(token);
             });
@@ -422,13 +433,20 @@
             document.getElementById('pos-p2').innerText = players[1].pos;
             
             let p1Card = document.getElementById('player-1-card'), p2Card = document.getElementById('player-2-card');
+            let rollBtn = document.getElementById('btn-roll');
+            
+            // إعادة ضبط زر النرد
+            document.getElementById('dice-icon').innerText = '🎲';
+            document.getElementById('dice-text').innerText = 'ارمي النرد';
+            rollBtn.className = "btn-glow flex flex-col items-center justify-center bg-gradient-to-b from-yellow-400 to-orange-600 text-white rounded-2xl p-2 sm:p-3 shadow-[0_0_15px_rgba(234,179,8,0.5)] border-b-4 border-orange-800 transform active:translate-y-1 active:border-b-0 w-[90px] sm:w-[130px] flex-shrink-0 z-10 transition-colors";
+
             if(turn === 0) {
-                p1Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 transition-all ${players[0].bgBorder} scale-105 shadow-lg min-w-0`;
-                p2Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-transparent opacity-50 transition-all scale-100 min-w-0`;
+                p1Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-2 rounded-xl border-2 transition-all ${players[0].bgBorder} scale-105 shadow-lg min-w-[70px]`;
+                p2Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-2 rounded-xl border-2 border-transparent opacity-50 transition-all scale-100 min-w-[70px]`;
                 document.getElementById('turn-indicator').innerText = "دور الأحمر";
             } else {
-                p2Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 transition-all ${players[1].bgBorder} scale-105 shadow-lg min-w-0`;
-                p1Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-transparent opacity-50 transition-all scale-100 min-w-0`;
+                p2Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-2 rounded-xl border-2 transition-all ${players[1].bgBorder} scale-105 shadow-lg min-w-[70px]`;
+                p1Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-2 rounded-xl border-2 border-transparent opacity-50 transition-all scale-100 min-w-[70px]`;
                 document.getElementById('turn-indicator').innerText = "دور الأزرق";
             }
         }
@@ -438,7 +456,11 @@
             isMoving = true;
             
             const icon = document.getElementById('dice-icon');
+            const text = document.getElementById('dice-text');
+            const btn = document.getElementById('btn-roll');
+            
             icon.classList.add('rolling');
+            text.innerText = "جاري الرمي...";
             
             let interval = setInterval(() => {
                 icon.innerText = ['🎲','⚀','⚁','⚂','⚃','⚄','⚅'][Math.floor(Math.random() * 6) + 1];
@@ -447,20 +469,28 @@
             setTimeout(() => {
                 clearInterval(interval);
                 icon.classList.remove('rolling');
+                
                 let roll = Math.floor(Math.random() * 6) + 1;
                 icon.innerText = ['','⚀','⚁','⚂','⚃','⚄','⚅'][roll];
+                text.innerText = `الرقم: ${roll}`;
                 
-                // إظهار النتيجة الضخمة
-                let popup = document.getElementById('dice-result-display');
-                document.getElementById('dice-result-number').innerText = roll;
-                popup.classList.remove('hidden');
+                // تلوين الزر بالأخضر لحظة الفوز بالرقم
+                btn.className = "btn-glow flex flex-col items-center justify-center bg-gradient-to-b from-green-500 to-emerald-700 text-white rounded-2xl p-2 sm:p-3 shadow-[0_0_20px_rgba(34,197,94,0.7)] border-b-4 border-green-900 transform w-[90px] sm:w-[130px] flex-shrink-0 z-10 transition-colors";
+
+                // إظهار التنبيه (Toast)
+                showToast(`مشى ${players[turn].name} ${roll} خطوات! 🚀`);
                 
-                setTimeout(() => {
-                    popup.classList.add('hidden');
-                    movePlayer(roll);
-                }, 1500); // الشاشة تبقى ثانية ونصف
-                
-            }, 500);
+                setTimeout(() => movePlayer(roll), 800);
+            }, 600);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('dice-toast');
+            document.getElementById('toast-text').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
         }
 
         function movePlayer(spaces) {
@@ -471,9 +501,12 @@
             p.pos = newPos;
             
             drawTokens();
-            updateUI();
             
-            setTimeout(showWordModal, 700); // ننتظر حتى تكتمل حركة اللاعب
+            setTimeout(() => {
+                document.getElementById('pos-p1').innerText = players[0].pos;
+                document.getElementById('pos-p2').innerText = players[1].pos;
+                showWordModal();
+            }, 700); 
         }
 
         function showWordModal() {
@@ -489,32 +522,31 @@
             
             if (isCorrect) {
                 if (actualLadders[p.pos]) {
-                    setTimeout(() => alert("ممتاز! لقد وجدت سلماً 🪜 يصعد بك!"), 100);
+                    setTimeout(() => showToast("ممتاز! صعدت السلم 🪜"), 100);
                     p.pos = actualLadders[p.pos];
                 }
                 else if (snakes[p.pos]) {
-                    setTimeout(() => alert("أوه لا! لقد لدغك الثعبان 🐍 تنزل للأسفل!"), 100);
+                    setTimeout(() => showToast("أوه لا! لدغك الثعبان 🐍"), 100);
                     p.pos = snakes[p.pos];
                 }
             } else {
-                setTimeout(() => alert("قراءة خاطئة! ❌ عد إلى مكانك السابق."), 100);
+                setTimeout(() => showToast("قراءة خاطئة ❌ عد للخلف"), 100);
                 p.pos = p.oldPos; 
             }
             
             drawTokens();
-            updateUI();
             
-            if (p.pos === 100) {
-                document.getElementById('winner-text').innerText = `🏆 ${p.name} هو بطل الارتقاء! 🏆`;
-                document.getElementById('modal-winner').style.display = 'flex';
+            setTimeout(() => {
+                if (p.pos === 100) {
+                    document.getElementById('winner-text').innerText = `🏆 ${p.name} هو بطل الارتقاء! 🏆`;
+                    document.getElementById('modal-winner').style.display = 'flex';
+                    isMoving = false;
+                    return;
+                }
+                turn = turn === 0 ? 1 : 0;
+                updateUI();
                 isMoving = false;
-                return;
-            }
-
-            turn = turn === 0 ? 1 : 0;
-            updateUI();
-            document.getElementById('dice-icon').innerText = '🎲';
-            isMoving = false;
+            }, 600);
         }
 
         function confirmExit() { document.getElementById('modal-confirm').style.display = 'flex'; }
