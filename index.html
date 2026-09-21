@@ -24,72 +24,54 @@
         .animate-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-10deg); }
-            20% { transform: translate(-3px, 0px) rotate(10deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(10deg); }
-            50% { transform: translate(-1px, 2px) rotate(-10deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-10deg); }
-            80% { transform: translate(-1px, -1px) rotate(10deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-10deg); }
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
         }
-        .rolling { animation: shake 0.5s; }
+        .rolling { animation: shake 0.3s infinite; }
 
         .glass-panel {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .board-cell {
             position: relative;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-start;
+            justify-content: flex-start;
             border-radius: 0.25rem;
-            font-weight: bold;
             box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
+            padding: 2px;
         }
-        .board-cell:nth-child(even) { background-color: rgba(99, 102, 241, 0.2); }
-        .board-cell:nth-child(odd) { background-color: rgba(168, 85, 247, 0.2); }
+        .board-cell:nth-child(even) { background-color: rgba(255, 255, 255, 0.9); }
+        .board-cell:nth-child(odd) { background-color: rgba(226, 232, 240, 0.9); }
         
         .cell-number {
-            position: absolute;
-            top: 1px;
-            left: 2px;
-            font-size: clamp(0.5rem, 1.5vw, 0.7rem);
-            color: rgba(255, 255, 255, 0.7);
-            font-weight: 800;
+            font-size: clamp(0.7rem, 2vw, 1.2rem);
+            color: #1e293b;
+            font-weight: 900;
+            opacity: 0.8;
+            z-index: 1;
         }
 
-        .ladder-indicator { font-size: clamp(0.8rem, 2vw, 1.2rem); filter: drop-shadow(0 0 2px #4ade80); }
-        .snake-indicator { font-size: clamp(0.8rem, 2vw, 1.2rem); filter: drop-shadow(0 0 2px #f87171); }
-
+        /* تنسيق اللاعبين الجديد ليتحركوا بنعومة فوق كل شيء */
         .player-token {
-            width: 45%;
-            height: 45%;
-            max-width: 28px;
-            max-height: 28px;
-            min-width: 14px;
-            min-height: 14px;
+            width: clamp(20px, 5%, 35px);
+            height: clamp(20px, 5%, 35px);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(8px, 2vw, 12px);
+            font-size: clamp(10px, 2vw, 16px);
             font-weight: 900;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            transition: transform 0.3s ease, top 0.3s, left 0.3s;
-            position: absolute;
-            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            z-index: 50;
         }
-        .player-1 { background-color: #ef4444; border: 1.5px solid white; transform: translate(15%, -15%); }
-        .player-2 { background-color: #3b82f6; border: 1.5px solid white; transform: translate(-15%, 15%); }
+        /* إزاحة خفيفة حتى لا يغطي اللاعب الأول الثاني تماماً */
+        .player-1 { background-color: #ef4444; border: 2px solid white; transform: translate(-80%, -80%); }
+        .player-2 { background-color: #3b82f6; border: 2px solid white; transform: translate(-20%, -20%); }
 
         .btn-glow { transition: all 0.2s; }
         .btn-glow:hover { box-shadow: 0 0 15px currentColor; transform: translateY(-2px); }
@@ -98,7 +80,6 @@
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-        /* اللودينق */
         .loader {
             border: 5px solid #1e293b;
             border-top: 5px solid #3b82f6;
@@ -119,16 +100,13 @@
         <div class="loader"></div>
     </div>
 
-    <!-- شاشة الفصول (المستويات) -->
+    <!-- شاشة الفصول -->
     <div id="screen-levels" class="w-full max-w-2xl glass-panel rounded-3xl p-6 sm:p-8 text-center animate-pop mt-10 hidden">
         <h1 class="text-4xl sm:text-5xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 drop-shadow-lg">
             🎮 أبطال الارتقاء 🚀
         </h1>
         <p class="text-md sm:text-lg text-gray-300 mb-8">اختر الفصل لتبدأ التحدي والمغامرة!</p>
-
-        <div id="levels-container" class="space-y-4 max-w-md mx-auto mb-6 max-h-[60vh] overflow-y-auto pr-2">
-            <!-- أزرار الفصول -->
-        </div>
+        <div id="levels-container" class="space-y-4 max-w-md mx-auto mb-6 max-h-[60vh] overflow-y-auto pr-2"></div>
     </div>
 
     <!-- شاشة الدروس -->
@@ -137,95 +115,89 @@
             <h2 id="selected-level-title" class="text-2xl sm:text-3xl font-bold text-cyan-400"></h2>
             <button onclick="showScreen('screen-levels')" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg font-bold text-sm sm:text-base">رجوع ↩</button>
         </div>
-        
-        <div id="lessons-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto pr-2">
-            <!-- أزرار الدروس -->
-        </div>
+        <div id="lessons-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto pr-2"></div>
     </div>
 
     <!-- شاشة اللعبة -->
-    <div id="screen-game" class="w-full max-w-3xl glass-panel rounded-3xl p-3 sm:p-6 animate-pop hidden flex-col items-center">
+    <div id="screen-game" class="w-full max-w-3xl glass-panel rounded-3xl p-3 sm:p-6 animate-pop hidden flex-col items-center relative">
         
-        <div class="w-full flex justify-between items-center mb-4">
-            <h2 id="game-title" class="text-lg sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 truncate max-w-[70%]">
-                الدرس الحالي
-            </h2>
-            <button onclick="confirmExit()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-700 px-3 py-1.5 rounded-lg font-bold transition text-xs sm:text-sm whitespace-nowrap">
-                خروج 🚪
-            </button>
+        <!-- نتيجة النرد الضخمة (تظهر في المنتصف) -->
+        <div id="dice-result-display" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] bg-black/95 px-10 py-6 rounded-3xl border-4 border-yellow-400 shadow-[0_0_50px_rgba(250,204,21,0.8)] animate-pop flex flex-col items-center justify-center gap-2">
+            <span class="text-2xl text-white font-bold">حصلت على</span>
+            <div class="flex items-center gap-4">
+                <span class="text-5xl">🎲</span>
+                <span id="dice-result-number" class="text-7xl font-black text-yellow-400"></span>
+            </div>
         </div>
 
-        <!-- لوحة تحكم اللاعبين والنرد (متجاوبة) -->
+        <div class="w-full flex justify-between items-center mb-4">
+            <h2 id="game-title" class="text-lg sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 truncate max-w-[70%]"></h2>
+            <button onclick="confirmExit()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-700 px-3 py-1.5 rounded-lg font-bold transition text-xs sm:text-sm">خروج 🚪</button>
+        </div>
+
+        <!-- لوحة التحكم -->
         <div class="w-full flex flex-row justify-between items-center bg-slate-800/50 p-2 sm:p-3 rounded-2xl mb-4 border border-slate-700 gap-2">
-            
             <div id="player-1-card" class="flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-red-500 bg-red-900/20 transition-all min-w-0">
-                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-500 flex items-center justify-center font-bold shadow-[0_0_10px_red] text-xs sm:text-base">1</div>
+                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-500 flex items-center justify-center font-bold text-xs sm:text-base shadow-[0_0_10px_red]">1</div>
                 <div class="text-center sm:text-right">
                     <p class="font-bold text-red-100 text-[10px] sm:text-sm truncate">اللاعب الأحمر</p>
-                    <p class="text-[9px] sm:text-xs text-red-300">مربع: <span id="pos-p1" class="font-black text-[10px] sm:text-sm">1</span></p>
+                    <p class="text-[9px] sm:text-xs text-red-300">مربع: <span id="pos-p1" class="font-black">1</span></p>
                 </div>
             </div>
 
-            <button onclick="rollDice()" id="btn-roll" class="btn-glow flex flex-col items-center justify-center bg-gradient-to-b from-yellow-400 to-orange-600 text-white rounded-2xl p-2 sm:p-3 shadow-[0_0_15px_rgba(234,179,8,0.5)] border-b-4 border-orange-800 transform active:translate-y-1 active:border-b-0 min-w-[80px] sm:min-w-[120px] flex-shrink-0">
-                <span class="text-[9px] sm:text-xs font-bold mb-1 opacity-90" id="turn-indicator">دور الأحمر</span>
-                <div class="text-2xl sm:text-4xl" id="dice-icon">🎲</div>
-                <span class="font-black text-[10px] sm:text-base mt-1">ارمي النرد</span>
+            <button onclick="rollDice()" id="btn-roll" class="btn-glow flex flex-col items-center justify-center bg-gradient-to-b from-yellow-400 to-orange-600 text-white rounded-2xl p-2 sm:p-3 shadow-[0_0_15px_rgba(234,179,8,0.5)] border-b-4 border-orange-800 transform active:translate-y-1 active:border-b-0 min-w-[80px] sm:min-w-[120px] flex-shrink-0 z-10">
+                <span class="text-[10px] sm:text-sm font-bold mb-1 opacity-90" id="turn-indicator">دور الأحمر</span>
+                <div class="text-3xl sm:text-5xl drop-shadow-md" id="dice-icon">🎲</div>
             </button>
 
             <div id="player-2-card" class="flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-transparent opacity-50 transition-all min-w-0">
                 <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-xs sm:text-base">2</div>
                 <div class="text-center sm:text-right">
                     <p class="font-bold text-blue-100 text-[10px] sm:text-sm truncate">اللاعب الأزرق</p>
-                    <p class="text-[9px] sm:text-xs text-blue-300">مربع: <span id="pos-p2" class="font-black text-[10px] sm:text-sm">1</span></p>
+                    <p class="text-[9px] sm:text-xs text-blue-300">مربع: <span id="pos-p2" class="font-black">1</span></p>
                 </div>
             </div>
         </div>
 
-        <div class="w-full max-w-[650px] aspect-square bg-slate-900 rounded-xl border-4 border-slate-700 shadow-2xl p-0.5 sm:p-1 relative mx-auto">
-            <div id="board-grid" class="w-full h-full grid grid-cols-10 grid-rows-10 gap-0.5 sm:gap-1">
-                <!-- Cells will be generated by JS -->
-            </div>
+        <!-- اللوحة التفاعلية مع رسومات SVG -->
+        <div class="w-full max-w-[650px] aspect-square bg-slate-900 rounded-xl border-4 border-slate-700 shadow-2xl p-1 relative mx-auto overflow-hidden">
+            <!-- الشبكة الخلفية -->
+            <div id="board-grid" class="w-full h-full grid grid-cols-10 grid-rows-10 gap-[1px] relative z-0"></div>
+            <!-- طبقة الرسومات (السلالم والثعابين) -->
+            <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" class="absolute inset-0 w-full h-full pointer-events-none z-10" id="svg-layer"></svg>
+            <!-- طبقة اللاعبين -->
+            <div id="players-layer" class="absolute inset-0 w-full h-full pointer-events-none z-20"></div>
         </div>
     </div>
 
     <!-- نافذة الكلمة المنبثقة -->
-    <div id="modal-word" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div id="modal-word" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[110] p-4">
         <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center border-2 border-indigo-500 animate-pop shadow-[0_0_50px_rgba(99,102,241,0.5)]">
             <h3 class="text-yellow-400 font-bold text-lg sm:text-xl mb-2">تحدي القراءة!</h3>
             <p id="modal-player-name" class="text-gray-300 mb-6 text-sm sm:text-base">اقرأ هذه الكلمة بصوت واضح:</p>
-            
             <div class="bg-white rounded-2xl p-4 sm:p-10 mb-8 shadow-inner flex justify-center items-center min-h-[120px] sm:min-h-[150px]">
-                <p id="modal-word-text" class="text-4xl sm:text-7xl font-black text-slate-900 leading-tight text-center break-words">
-                    كلمة
-                </p>
+                <p id="modal-word-text" class="text-5xl sm:text-7xl font-black text-slate-900 leading-tight text-center break-words"></p>
             </div>
-
             <p class="text-xs sm:text-sm text-gray-400 mb-4">تقييم المعلم:</p>
             <div class="flex gap-3 sm:gap-4 justify-center">
-                <button onclick="handleAnswer(true)" class="flex-1 btn-glow bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 sm:py-4 px-2 sm:px-4 rounded-xl text-sm sm:text-xl flex items-center justify-center gap-1 sm:gap-2">
-                    <span>✅ صحيحة</span>
-                </button>
-                <button onclick="handleAnswer(false)" class="flex-1 btn-glow bg-gradient-to-r from-red-600 to-rose-700 text-white font-bold py-3 sm:py-4 px-2 sm:px-4 rounded-xl text-sm sm:text-xl flex items-center justify-center gap-1 sm:gap-2">
-                    <span>❌ خاطئة</span>
-                </button>
+                <button onclick="handleAnswer(true)" class="flex-1 btn-glow bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 sm:py-4 px-2 sm:px-4 rounded-xl text-sm sm:text-xl flex items-center justify-center gap-1 sm:gap-2">✅ صحيحة</button>
+                <button onclick="handleAnswer(false)" class="flex-1 btn-glow bg-gradient-to-r from-red-600 to-rose-700 text-white font-bold py-3 sm:py-4 px-2 sm:px-4 rounded-xl text-sm sm:text-xl flex items-center justify-center gap-1 sm:gap-2">❌ خاطئة</button>
             </div>
         </div>
     </div>
 
     <!-- نافذة الفوز -->
-    <div id="modal-winner" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+    <div id="modal-winner" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-[110] p-4">
         <div class="glass-panel rounded-3xl p-10 max-w-md w-full text-center border-2 border-yellow-400 animate-pop">
             <div class="text-8xl mb-6">🏆</div>
             <h2 class="text-4xl font-black text-yellow-400 mb-2">مبرووووك!</h2>
-            <p id="winner-text" class="text-xl sm:text-2xl text-white mb-8">اللاعب الأول هو البطل!</p>
-            <button onclick="resetGameAndGoToMenu()" class="btn-glow w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl text-xl shadow-lg">
-                العودة للقائمة
-            </button>
+            <p id="winner-text" class="text-xl sm:text-2xl text-white mb-8"></p>
+            <button onclick="resetGameAndGoToMenu()" class="btn-glow w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl text-xl shadow-lg">العودة للقائمة</button>
         </div>
     </div>
 
     <!-- نافذة تأكيد الخروج -->
-    <div id="modal-confirm" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div id="modal-confirm" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[110] p-4">
         <div class="glass-panel rounded-3xl p-6 max-w-sm w-full text-center border-2 border-red-500 animate-pop">
             <h3 class="text-xl sm:text-2xl font-bold text-white mb-4">هل أنت متأكد؟</h3>
             <p class="text-gray-300 mb-6">ستفقد تقدمك الحالي في اللعبة.</p>
@@ -237,14 +209,11 @@
     </div>
 
     <script>
-        // رابط جوجل شيت الخاص بك
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1G_m-78HQpFchgOcJdJFYC4zA_YgWs-1zDtDhQnl1pT_5BDnRvr1-WFCUy6zmnTwizN_dYLhF2d9s/pub?output=csv'; 
-
         let database = {}; 
         let currentWordsList = [];
-        let activeLevelName = "";
+        let cellsOrder = [];
         
-        // خريطة السلالم والثعابين 100 مربع
         const actualLadders = { 4: 14, 9: 31, 21: 42, 28: 84, 51: 67, 72: 91, 80: 99 };
         const snakes = { 17: 7, 54: 34, 62: 19, 64: 60, 87: 36, 93: 73, 95: 75, 98: 79 };
 
@@ -255,9 +224,7 @@
         let turn = 0; 
         let isMoving = false;
 
-        window.onload = () => {
-            fetchData();
-        }
+        window.onload = () => fetchData();
 
         async function fetchData() {
             try {
@@ -267,7 +234,7 @@
                 renderLevels();
                 showScreen('screen-levels');
             } catch (error) {
-                console.error("خطأ في التحميل:", error);
+                console.error(error);
                 alert("لم نتمكن من تحميل الدروس! يرجى التأكد من الرابط.");
             }
         }
@@ -277,56 +244,36 @@
             for(let i = 1; i < rows.length; i++) {
                 let row = rows[i].trim();
                 if(!row) continue;
-                
                 let cols = row.split(',').map(c => c.replace(/"/g, '').trim());
                 if(cols.length >= 3) {
-                    let level = cols[0];
-                    let lesson = cols[1];
+                    let level = cols[0], lesson = cols[1];
                     let wordsString = cols.slice(2).join(','); 
                     let words = wordsString.split(/[،,-]/).map(w => w.trim()).filter(w => w.length > 0 && w !== "كلمة١" && w !== "كلمة٢" && w !== "كلمة٣");
-
-                    if(words.length === 0) words = ["(أضف كلمات للدرس في الشيت)"];
-
+                    if(words.length === 0) words = ["(أضف كلمات)"];
                     if(!database[level]) database[level] = {};
                     if(!database[level][lesson]) database[level][lesson] = [];
-                    
                     database[level][lesson] = database[level][lesson].concat(words);
                 }
             }
         }
 
         function showScreen(screenId) {
-            document.getElementById('screen-loading').classList.add('hidden');
-            document.getElementById('screen-levels').classList.add('hidden');
-            document.getElementById('screen-lessons').classList.add('hidden');
-            document.getElementById('screen-game').classList.add('hidden');
+            ['screen-loading', 'screen-levels', 'screen-lessons', 'screen-game'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
             document.getElementById(screenId).classList.remove('hidden');
         }
 
         function renderLevels() {
             const container = document.getElementById('levels-container');
             container.innerHTML = '';
-            
-            const gradients = [
-                'from-emerald-500 to-green-600',
-                'from-blue-500 to-indigo-600',
-                'from-purple-500 to-pink-600',
-                'from-orange-500 to-red-600'
-            ];
-
+            const gradients = ['from-emerald-500 to-green-600', 'from-blue-500 to-indigo-600', 'from-purple-500 to-pink-600', 'from-orange-500 to-red-600'];
             let index = 0;
             for(let levelName in database) {
-                let grad = gradients[index % gradients.length];
                 let btn = document.createElement('button');
-                btn.className = `btn-glow w-full bg-gradient-to-r ${grad} text-white font-bold py-4 px-6 rounded-xl text-lg sm:text-xl shadow-lg flex items-center justify-between text-right mb-4`;
-                btn.onclick = () => {
-                    renderLessons(levelName);
-                    showScreen('screen-lessons');
-                };
-                btn.innerHTML = `
-                    <span class="truncate pr-2">${levelName}</span>
-                    <span class="text-2xl pl-2">▶</span>
-                `;
+                btn.className = `btn-glow w-full bg-gradient-to-r ${gradients[index % gradients.length]} text-white font-bold py-4 px-6 rounded-xl text-lg sm:text-xl shadow-lg flex items-center justify-between text-right mb-4`;
+                btn.onclick = () => { renderLessons(levelName); showScreen('screen-lessons'); };
+                btn.innerHTML = `<span class="truncate pr-2">${levelName}</span><span class="text-2xl pl-2">▶</span>`;
                 container.appendChild(btn);
                 index++;
             }
@@ -337,14 +284,11 @@
             const container = document.getElementById('lessons-container');
             container.innerHTML = "";
             let lessons = database[levelName];
-            
             for(let lessonName in lessons) {
                 let btn = document.createElement('button');
-                btn.className = 'btn-card bg-slate-800 border-2 border-indigo-500 text-white font-bold p-4 rounded-xl hover:bg-indigo-600 transition shadow-lg text-sm sm:text-base';
+                btn.className = 'bg-slate-800 border-2 border-indigo-500 text-white font-bold p-4 rounded-xl hover:bg-indigo-600 transition shadow-lg text-sm sm:text-base';
                 btn.innerText = lessonName;
-                btn.onclick = () => {
-                    startGame(lessonName, lessons[lessonName]);
-                };
+                btn.onclick = () => startGame(lessonName, lessons[lessonName]);
                 container.appendChild(btn);
             }
         }
@@ -352,12 +296,11 @@
         function startGame(lessonTitle, wordsArr) {
             document.getElementById('game-title').innerText = lessonTitle;
             currentWordsList = wordsArr;
-            
-            players[0].pos = 1; players[0].oldPos = 1;
-            players[1].pos = 1; players[1].oldPos = 1;
+            players.forEach(p => { p.pos = 1; p.oldPos = 1; });
             turn = 0;
             
             generateBoard();
+            drawSnakesAndLaddersGraphics();
             updateUI();
             showScreen('screen-game');
             setTimeout(drawTokens, 100);
@@ -366,58 +309,111 @@
         function generateBoard() {
             const grid = document.getElementById('board-grid');
             grid.innerHTML = '';
+            cellsOrder = [];
             
             for (let r = 9; r >= 0; r--) {
-                for (let c = 0; c < 10; c++) {
-                    let num;
-                    if (r % 2 === 0) {
-                        num = (r * 10) + c + 1;
-                    } else {
-                        num = (r * 10) + (10 - c);
-                    }
+                let rowCells = [];
+                for (let c = 0; c < 10; c++) { rowCells.push((r * 10) + c + 1); }
+                if (r % 2 !== 0) rowCells.reverse();
+                cellsOrder = cellsOrder.concat(rowCells);
+            }
 
-                    let cell = document.createElement('div');
-                    cell.className = 'board-cell';
-                    cell.id = `cell-${num}`;
-                    
-                    let numSpan = document.createElement('span');
-                    numSpan.className = 'cell-number';
-                    numSpan.innerText = num;
-                    cell.appendChild(numSpan);
+            cellsOrder.forEach(num => {
+                let cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.id = `cell-${num}`;
+                
+                let numSpan = document.createElement('span');
+                numSpan.className = 'cell-number';
+                numSpan.innerText = num;
+                
+                if(num === 1) numSpan.innerHTML += `<br><span style="font-size:10px;">البداية</span>`;
+                if(num === 100) numSpan.innerHTML += `<br><span style="font-size:10px;">النهاية</span>`;
+                
+                cell.appendChild(numSpan);
+                grid.appendChild(cell);
+            });
+        }
 
-                    if (actualLadders[num]) {
-                        let ind = document.createElement('span');
-                        ind.className = 'ladder-indicator absolute opacity-50';
-                        ind.innerText = '🪜';
-                        cell.appendChild(ind);
-                        cell.style.boxShadow = 'inset 0 0 10px rgba(74, 222, 128, 0.4)';
-                    }
-                    if (snakes[num]) {
-                        let ind = document.createElement('span');
-                        ind.className = 'snake-indicator absolute opacity-50';
-                        ind.innerText = '🐍';
-                        cell.appendChild(ind);
-                        cell.style.boxShadow = 'inset 0 0 10px rgba(248, 113, 113, 0.4)';
-                    }
+        // رسم السلالم والثعابين باحترافية عالية 
+        function drawSnakesAndLaddersGraphics() {
+            const svg = document.getElementById('svg-layer');
+            let svgHtml = '';
+            
+            function getCoords(num) {
+                let index = cellsOrder.indexOf(num);
+                let row = Math.floor(index / 10);
+                let col = index % 10;
+                return { x: (9 - col) * 100 + 50, y: row * 100 + 50 }; // SVG 1000x1000
+            }
 
-                    if(num === 1) cell.innerHTML += `<span style="opacity:0.2; font-size:12px;">🏁</span>`;
-                    if(num === 100) cell.innerHTML += `<span style="opacity:0.6; font-size:12px;">🏆</span>`;
-
-                    grid.appendChild(cell);
+            // رسم السلالم (Ladders)
+            for (let start in actualLadders) {
+                let p1 = getCoords(parseInt(start)), p2 = getCoords(actualLadders[start]);
+                let dx = p2.x - p1.x, dy = p2.y - p1.y;
+                let angle = Math.atan2(dy, dx);
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                let nx = -Math.sin(angle) * 15, ny = Math.cos(angle) * 15;
+                
+                // قضبان السلم الخشبية
+                svgHtml += `<line x1="${p1.x+nx}" y1="${p1.y+ny}" x2="${p2.x+nx}" y2="${p2.y+ny}" stroke="#92400e" stroke-width="12" stroke-linecap="round"/>`;
+                svgHtml += `<line x1="${p1.x-nx}" y1="${p1.y-ny}" x2="${p2.x-nx}" y2="${p2.y-ny}" stroke="#92400e" stroke-width="12" stroke-linecap="round"/>`;
+                
+                // الدرجات
+                let steps = Math.floor(dist / 35);
+                for(let i = 1; i < steps; i++) {
+                    let px = p1.x + (dx * i / steps), py = p1.y + (dy * i / steps);
+                    svgHtml += `<line x1="${px+nx}" y1="${py+ny}" x2="${px-nx}" y2="${py-ny}" stroke="#b45309" stroke-width="8" />`;
                 }
             }
+
+            // رسم الثعابين (Snakes)
+            for (let start in snakes) {
+                let p1 = getCoords(parseInt(start)); // الرأس
+                let p2 = getCoords(snakes[start]); // الذيل
+                
+                let dx = p2.x - p1.x, dy = p2.y - p1.y;
+                let angle = Math.atan2(dy, dx);
+                let cx = (p1.x + p2.x)/2 - Math.sin(angle)*150;
+                let cy = (p1.y + p2.y)/2 + Math.cos(angle)*150;
+                
+                // جسم الثعبان
+                svgHtml += `<path d="M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}" fill="none" stroke="#15803d" stroke-width="24" stroke-linecap="round"/>`;
+                // بطن الثعبان (زخرفة)
+                svgHtml += `<path d="M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}" fill="none" stroke="#4ade80" stroke-width="8" stroke-dasharray="15 15" stroke-linecap="round"/>`;
+                
+                // رأس الثعبان
+                let hx = p1.x - Math.cos(angle)*15, hy = p1.y - Math.sin(angle)*15;
+                svgHtml += `<circle cx="${hx}" cy="${hy}" r="22" fill="#15803d"/>`;
+                
+                // العيون
+                let ex = Math.cos(angle + Math.PI/2) * 10, ey = Math.sin(angle + Math.PI/2) * 10;
+                svgHtml += `<circle cx="${hx+ex}" cy="${hy+ey}" r="6" fill="white"/><circle cx="${hx+ex}" cy="${hy+ey}" r="3" fill="black"/>`;
+                svgHtml += `<circle cx="${hx-ex}" cy="${hy-ey}" r="6" fill="white"/><circle cx="${hx-ex}" cy="${hy-ey}" r="3" fill="black"/>`;
+                
+                // اللسان
+                let tx1 = hx - Math.cos(angle)*22, ty1 = hy - Math.sin(angle)*22;
+                let tx2 = hx - Math.cos(angle)*40, ty2 = hy - Math.sin(angle)*40;
+                svgHtml += `<line x1="${tx1}" y1="${ty1}" x2="${tx2}" y2="${ty2}" stroke="#ef4444" stroke-width="4"/>`;
+            }
+            svg.innerHTML = svgHtml;
         }
 
         function drawTokens() {
-            document.querySelectorAll('.player-token').forEach(el => el.remove());
+            const layer = document.getElementById('players-layer');
+            layer.innerHTML = '';
             players.forEach(p => {
-                let cell = document.getElementById(`cell-${p.pos}`);
-                if (cell) {
-                    let token = document.createElement('div');
-                    token.className = `player-token ${p.colorClass}`;
-                    token.innerText = p.id;
-                    cell.appendChild(token);
-                }
+                let index = cellsOrder.indexOf(p.pos);
+                let row = Math.floor(index / 10), col = index % 10;
+                let xPercent = (9 - col) * 10 + 5;
+                let yPercent = row * 10 + 5;
+
+                let token = document.createElement('div');
+                token.className = `player-token ${p.colorClass} absolute transition-all duration-[600ms] ease-in-out`;
+                token.style.left = `${xPercent}%`;
+                token.style.top = `${yPercent}%`;
+                token.innerText = p.id;
+                layer.appendChild(token);
             });
         }
 
@@ -425,9 +421,7 @@
             document.getElementById('pos-p1').innerText = players[0].pos;
             document.getElementById('pos-p2').innerText = players[1].pos;
             
-            let p1Card = document.getElementById('player-1-card');
-            let p2Card = document.getElementById('player-2-card');
-            
+            let p1Card = document.getElementById('player-1-card'), p2Card = document.getElementById('player-2-card');
             if(turn === 0) {
                 p1Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 transition-all ${players[0].bgBorder} scale-105 shadow-lg min-w-0`;
                 p2Card.className = `flex-1 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 sm:p-2 rounded-xl border-2 border-transparent opacity-50 transition-all scale-100 min-w-0`;
@@ -454,25 +448,32 @@
                 clearInterval(interval);
                 icon.classList.remove('rolling');
                 let roll = Math.floor(Math.random() * 6) + 1;
-                const diceFaces = ['','⚀','⚁','⚂','⚃','⚄','⚅'];
-                icon.innerText = diceFaces[roll];
+                icon.innerText = ['','⚀','⚁','⚂','⚃','⚄','⚅'][roll];
                 
-                setTimeout(() => movePlayer(roll), 400);
+                // إظهار النتيجة الضخمة
+                let popup = document.getElementById('dice-result-display');
+                document.getElementById('dice-result-number').innerText = roll;
+                popup.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    popup.classList.add('hidden');
+                    movePlayer(roll);
+                }, 1500); // الشاشة تبقى ثانية ونصف
+                
             }, 500);
         }
 
         function movePlayer(spaces) {
             let p = players[turn];
             p.oldPos = p.pos; 
-            
             let newPos = p.pos + spaces;
             if (newPos > 100) newPos = 100;
-            
             p.pos = newPos;
+            
             drawTokens();
             updateUI();
             
-            setTimeout(showWordModal, 600);
+            setTimeout(showWordModal, 700); // ننتظر حتى تكتمل حركة اللاعب
         }
 
         function showWordModal() {
@@ -517,7 +518,6 @@
         }
 
         function confirmExit() { document.getElementById('modal-confirm').style.display = 'flex'; }
-        
         function resetGameAndGoToMenu() {
             document.getElementById('modal-winner').style.display = 'none';
             showScreen('screen-levels');
